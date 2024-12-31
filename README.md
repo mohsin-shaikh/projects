@@ -1,6 +1,6 @@
 # Projects
 
-This repository contains a collection of projects requirements that we are going to work on.
+This repository contains a collection of projects requirements.
 
 ## List of projects
 
