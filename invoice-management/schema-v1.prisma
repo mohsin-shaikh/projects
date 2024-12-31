@@ -1,0 +1,197 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Workspace {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
+  settings      Json?     // Workspace-specific settings
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  members       WorkspaceMember[]
+  companies     Company[]
+  invoices      Invoice[]
+  payments      Payment[]
+  invitations   WorkspaceInvitation[]
+}
+
+model WorkspaceInvitation {
+  id            String          @id @default(cuid())
+  workspaceId   String
+  email         String
+  role          Role            @default(MEMBER)
+  token         String          @unique    // Unique token for invitation link
+  status        InviteStatus    @default(PENDING)
+  expiresAt     DateTime
+  invitedById   String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Relations
+  workspace     Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  invitedBy     User           @relation("InvitedBy", fields: [invitedById], references: [id])
+
+  @@unique([workspaceId, email])
+  @@index([workspaceId])
+  @@index([email])
+  @@index([token])
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        Role      @default(MEMBER)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String    // Hashed password
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  workspaces    WorkspaceMember[]
+  invitationsSent WorkspaceInvitation[] @relation("InvitedBy")
+}
+
+model Company {
+  id                String     @id @default(cuid())
+  workspaceId       String
+  name              String
+  email             String?
+  phone             String?
+  address           String?
+  taxNumber         String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  
+  // Relations
+  workspace         Workspace  @relation(fields: [workspaceId], references: [id])
+  invoicesIssued    Invoice[]  @relation("Issuer")
+  invoicesReceived  Invoice[]  @relation("Recipient")
+
+  @@unique([workspaceId, taxNumber])
+  @@index([workspaceId])
+}
+
+model Invoice {
+  id                String          @id @default(cuid())
+  workspaceId       String
+  invoiceNumber     String
+  issuerId          String
+  recipientId       String
+  issueDate         DateTime
+  dueDate           DateTime
+  status            InvoiceStatus   @default(DRAFT)
+  currency          String          @default("USD")
+  subtotal          Decimal         @db.Decimal(10, 2)
+  taxAmount         Decimal         @db.Decimal(10, 2)
+  totalAmount       Decimal         @db.Decimal(10, 2)
+  notes             String?
+  terms             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  workspace         Workspace       @relation(fields: [workspaceId], references: [id])
+  issuer            Company         @relation("Issuer", fields: [issuerId], references: [id])
+  recipient         Company         @relation("Recipient", fields: [recipientId], references: [id])
+  items             InvoiceItem[]
+  payments          Payment[]
+
+  @@unique([workspaceId, invoiceNumber])
+  @@index([workspaceId])
+  @@index([issuerId])
+  @@index([recipientId])
+}
+
+model InvoiceItem {
+  id          String    @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Int
+  unitPrice   Decimal   @db.Decimal(10, 2)
+  amount      Decimal   @db.Decimal(10, 2)
+  taxRate     Decimal   @db.Decimal(5, 2)
+  taxAmount   Decimal   @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  invoice     Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  workspaceId String
+  invoiceId   String
+  amount      Decimal       @db.Decimal(10, 2)
+  paymentDate DateTime
+  method      PaymentMethod
+  reference   String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id])
+  invoice     Invoice       @relation(fields: [invoiceId], references: [id])
+
+  @@index([workspaceId])
+  @@index([invoiceId])
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+  PARTIALLY_PAID
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CREDIT_CARD
+  CASH
+  CHECK
+  OTHER
+}
