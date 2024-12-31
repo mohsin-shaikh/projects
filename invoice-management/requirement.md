@@ -59,7 +59,7 @@ The Invoice Management App is designed to help businesses create, manage, and tr
 
 ## User Flow Diagrams
 
-### User Registration and Login
+### User Registration and Login Flow Diagram
 
 ```mermaid
 graph TD;
@@ -73,7 +73,7 @@ graph TD;
     H -->|Authenticates| I[User Dashboard];
 ```
 
-### Invoice Creation
+### Invoice Creation Flow Diagram
 
 ```mermaid
 graph TD;
@@ -84,7 +84,7 @@ graph TD;
     E -->|Displays| F[Invoice List];
 ```
 
-### Payment Tracking
+### Payment Tracking Flow Diagram
 
 ```mermaid
 graph TD;
