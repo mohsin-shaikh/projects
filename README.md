@@ -4,7 +4,7 @@ This repository contains a collection of projects requirements.
 
 ## List of projects
 
-- [Invoice Management App](11-invoice-management/requirement.md)
+- [Invoice Management App](invoice-management/requirement.md)
 
 ## Contributing
 
