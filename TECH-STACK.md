@@ -20,20 +20,23 @@
   - Next.js
 - Authentication
   - Clerk
-- Analytics
-  - Web Analytics
-    - Google Analytics
-  - Product Analytics
-    - posthog
+- Web Analytics
+  - Google Analytics
+- Product Analytics
+  - posthog
 - CMS
   - Basehub
 - Security
   - Arcjet
-- Observability
+- BetterStack
+  - Logging
+  - Uptime Monitoring
+- Error Tracking
   - Sentry
 - Design System
   - Tailwind CSS
   - shadcn/ui
+  - Storybook
 - Database
   - Neon DB
     - Postgres
@@ -43,14 +46,10 @@
   - Resend
 - Payments
   - Stripe
-- Webhooks
-  - Svix
 - Storage
   - Vercel Blob
 - Feature Flags
   - Vercel Flags SDK
-- AI
-  - Vercel ai-sdk
 - SEO
   - Metadata
   - Sitemap
